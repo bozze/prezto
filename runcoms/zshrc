@@ -12,7 +12,17 @@ fi
 
 # Customize to your needs...
 
+# Aliases
 alias cp="cp -i"
 alias mv="mv -i"
 alias rm="rm -i"
 alias v="vim"
+
+# Keybinds 
+bindkey "\e[1;9D"	emacs-backward-word	# Alt+left
+bindkey "\e[1;9C"	emacs-forward-word	# Alt+right
+bindkey "3~" 		kill-word 		# Alt+Del
+bindkey "\e[1~" 	beginning-of-line 	# Home
+bindkey "\e[4~" 	end-of-line 		# End 
+bindkey "\e[5~" 	beginning-of-history 	# Pg-up
+bindkey "\e[6~" 	end-of-history 		# Pg-down
