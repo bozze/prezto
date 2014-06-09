@@ -10,13 +10,21 @@ if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
 fi
 
-# Customize to your needs...
+# Check OS and tune things
+if [[ "$OSTYPE" == darwin* ]]; then
+  PREFIX="/usr"
+else
+  PREFIX="/usr/local"
+fi
 
 # Aliases
 alias cp="cp -i"
 alias mv="mv -i"
 alias rm="rm -i"
 alias v="vim"
+alias vless="$PREFIX/share/vim/vim$(vim -version 2>&1 | head -1 |sed -e 's/[^0-9]*\([0-9]\).\([0-9]*\).*/\1\2/')/macros/less.sh"
+alias tree="ls -R | grep ":$" | sed -e 's/:$//' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'"
+alias tma="tmux attach-session"
 
 # Keybinds 
 bindkey "\e[1;9D"	emacs-backward-word	# Alt+left
@@ -26,3 +34,15 @@ bindkey "\e[1~" 	beginning-of-line 	# Home
 bindkey "\e[4~" 	end-of-line 		# End 
 bindkey "\e[5~" 	beginning-of-history 	# Pg-up
 bindkey "\e[6~" 	end-of-history 		# Pg-down
+
+# Load keychain
+if [ -x /usr/local/bin/keychain ]; then
+  eval `/usr/local/bin/keychain --inherit local-once --eval --lockwait 15`
+  alias add_key="/usr/local/bin/keychain \`basename -a -s .pub ~/.ssh/*.pub \`"
+fi
+
+# Init Rbenv
+if which rbenv &> /dev/null; then
+  export PATH="$HOME/.rbenv/bin:$PATH"
+  eval "$(rbenv init -)"
+fi
