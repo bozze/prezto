@@ -25,20 +25,27 @@ alias v="vim"
 alias vless="$PREFIX/share/vim/vim$(vim -version 2>&1 | head -1 |sed -e 's/[^0-9]*\([0-9]\).\([0-9]*\).*/\1\2/')/macros/less.sh"
 alias tree="ls -R | grep ":$" | sed -e 's/:$//' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'"
 alias tma="tmux attach-session"
+alias vpn-up="sudo systemctl start openvpn@wopr.service"
+alias vpn-down="sudo systemctl stop openvpn@wopr.service"
+alias vpn-status="sudo systemctl status openvpn@wopr.service"
+alias vpn="sudo systemctl $1 openvpn@wopr.service"
 
-# Keybinds 
-bindkey "\e[1;9D"	emacs-backward-word	# Alt+left
-bindkey "\e[1;9C"	emacs-forward-word	# Alt+right
-bindkey "3~" 		kill-word 		# Alt+Del
-bindkey "\e[1~" 	beginning-of-line 	# Home
-bindkey "\e[4~" 	end-of-line 		# End 
-bindkey "\e[5~" 	beginning-of-history 	# Pg-up
-bindkey "\e[6~" 	end-of-history 		# Pg-down
+alias l="ls -lh"
+
+# Keybinds
+bindkey "\e[1;9D" emacs-backward-word   # Alt+left
+bindkey "\e[1;9C" emacs-forward-word    # Alt+right
+bindkey "3~"      kill-word             # Alt+Del
+bindkey "\e[1~"   beginning-of-line     # Home
+bindkey "\e[4~"   end-of-line           # End
+bindkey "\e[5~"   beginning-of-history  # Pg-up
+bindkey "\e[6~"   end-of-history        # Pg-down
 
 # Load keychain
-if [ -x /usr/local/bin/keychain ]; then
-  eval `/usr/local/bin/keychain --inherit local-once --eval --lockwait 15`
-  alias add_key="/usr/local/bin/keychain \`basename -a -s .pub ~/.ssh/*.pub \`"
+KEYCHAIN=$(which keychain)
+if [ -x $KEYCHAIN ]; then
+  eval `$KEYCHAIN --agents ssh --inherit local-once --eval --lockwait 15`
+  alias add_key="$KEYCHAIN \`basename -a -s .pub ~/.ssh/*.pub \`"
 fi
 
 # Init Rbenv
@@ -46,3 +53,9 @@ if which rbenv &> /dev/null; then
   export PATH="$HOME/.rbenv/bin:$PATH"
   eval "$(rbenv init -)"
 fi
+
+if [ -f $HOME/dotfiles/dircolors ]; then
+  eval $(dircolors $HOME/dotfiles/dircolors)
+fi
+
+unset GREP_OPTIONS
