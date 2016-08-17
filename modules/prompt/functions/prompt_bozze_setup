@@ -7,7 +7,7 @@ pmodload 'helper'
 
 function prompt_bozze_rubyversion {
   if [[ -e ".ruby-version" ]]; then
-    _prompt_bozze_rubyversion="%{%b%k%F{red}%}⬩%{%b%f%k%}$(rbenv version | sed -e 's/ .*//')"
+    _prompt_bozze_rubyversion="%{%b%k%F{red}%}◆%{%b%f%k%}$(rbenv version | sed -e 's/ .*//')"
   else
     _prompt_bozze_rubyversion=''
   fi

@@ -11,11 +11,66 @@ if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
 fi
 
 # Check OS and tune things
-if [[ "$OSTYPE" == darwin* ]]; then
-  PREFIX="/usr"
-else
+if [[ "$OSTYPE" == freebsd* ]]; then
   PREFIX="/usr/local"
+else
+  PREFIX="/usr"
 fi
+
+# Keybinds
+bindkey "\e[1;9D" emacs-backward-word   # Alt+left
+bindkey "\e[1;9C" emacs-forward-word    # Alt+right
+bindkey "\e\e[D"  emacs-backward-word   # Alt+left
+bindkey "\e\e[C"  emacs-forward-word    # Alt+right
+bindkey "\e\e[3~" kill-word             # Alt+Del
+bindkey "\e[1~"   beginning-of-line     # Home
+bindkey "\e[4~"   end-of-line           # End
+bindkey "\e[5~"   beginning-of-history  # Pg-up
+bindkey "\e[6~"   end-of-history        # Pg-down
+
+## Load keychain
+#KEYCHAIN=$(which keychain)
+#if [ -x $KEYCHAIN ]; then
+  #eval `$KEYCHAIN --eval --agents gpg`
+  ##eval `$KEYCHAIN --agents gpg --inherit local-once --eval --lockwait 15`
+  ##alias add_key="$KEYCHAIN \`basename -a -s .pub ~/.ssh/*.pub \`"
+#fi
+
+# Start GPG Agent manually (so SSH can use it)
+export GPG_TTY=$(tty)
+if [ -x "$(which gpg-connect-agent)" ]; then
+  #gpg-connect-agent updatestartuptty /bye 2> /dev/null
+  echo -ne "\e[1;32m *\e[m Run gpg-agent: "
+  if [ "$(gpg-connect-agent updatestartuptty /bye 2> /dev/null)" = "OK" ]; then
+    echo -e "\e[36mOK\e[m"
+  else
+    echo -e "\e[31mKO\e[m"
+  fi
+fi
+
+# Set GPG agent as SSH agent
+unset SSH_AGENT_PID
+if [ "${gnupg_SSH_AUTH_SOCK_by:-0}" -ne $$ ]; then
+  export SSH_AUTH_SOCK="${HOME}/.gnupg/S.gpg-agent.ssh"
+fi
+echo -e "\e[1;32m *\e[m SSH auth sock: \e[36m${SSH_AUTH_SOCK/$HOME/~}\e[m"
+SSH_KEYS=$(ssh-add -l) # | sed 's!.\{28\} \(cardno:.*\)! \1!')
+echo -e "\e[1;32m *\e[m Key(s) loaded: \e[36m${SSH_KEYS/ \(card.*\)/\n\1}\e[m\n"
+
+
+# Init Rbenv
+if which rbenv &> /dev/null; then
+  export PATH="$HOME/.rbenv/bin:$PATH"
+  eval "$(rbenv init -)"
+fi
+
+# Eval custom dircolors
+if [ -f $HOME/dotfiles/dircolors ]; then
+  eval $(dircolors $HOME/dotfiles/dircolors)
+fi
+
+# remove deprecated env set by zprezto for 'grep'
+unset GREP_OPTIONS
 
 # Aliases
 alias cp="cp -i"
@@ -24,38 +79,11 @@ alias rm="rm -i"
 alias v="vim"
 alias vless="$PREFIX/share/vim/vim$(vim -version 2>&1 | head -1 |sed -e 's/[^0-9]*\([0-9]\).\([0-9]*\).*/\1\2/')/macros/less.sh"
 alias tree="ls -R | grep ":$" | sed -e 's/:$//' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'"
+
 alias tma="tmux attach-session"
-alias vpn-up="sudo systemctl start openvpn@wopr.service"
-alias vpn-down="sudo systemctl stop openvpn@wopr.service"
-alias vpn-status="sudo systemctl status openvpn@wopr.service"
-alias vpn="sudo systemctl $1 openvpn@wopr.service"
+alias tml="tmux ls"
 
 alias l="ls -lh"
-
-# Keybinds
-bindkey "\e[1;9D" emacs-backward-word   # Alt+left
-bindkey "\e[1;9C" emacs-forward-word    # Alt+right
-bindkey "3~"      kill-word             # Alt+Del
-bindkey "\e[1~"   beginning-of-line     # Home
-bindkey "\e[4~"   end-of-line           # End
-bindkey "\e[5~"   beginning-of-history  # Pg-up
-bindkey "\e[6~"   end-of-history        # Pg-down
-
-# Load keychain
-KEYCHAIN=$(which keychain)
-if [ -x $KEYCHAIN ]; then
-  eval `$KEYCHAIN --agents ssh --inherit local-once --eval --lockwait 15`
-  alias add_key="$KEYCHAIN \`basename -a -s .pub ~/.ssh/*.pub \`"
-fi
-
-# Init Rbenv
-if which rbenv &> /dev/null; then
-  export PATH="$HOME/.rbenv/bin:$PATH"
-  eval "$(rbenv init -)"
-fi
-
-if [ -f $HOME/dotfiles/dircolors ]; then
-  eval $(dircolors $HOME/dotfiles/dircolors)
-fi
-
-unset GREP_OPTIONS
+alias vz="vim $ZDOTDIR/.zshrc"
+alias sz="source $ZDOTDIR/.zshrc"
+alias sc=systemctl
